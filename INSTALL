@@ -1,9 +1,9 @@
-Building RecCoin
+### Building REChain 🪐 Coin (RecCoin)
 
 See doc/readme-qt.rst for instructions on building reccoin-qt,
 the intended-for-end-users, nice-graphical-interface, reference
 implementation of RecCoin.
 
-See doc/build-*.txt for instructions on building reccoin,
+See doc/build-*.txt for instructions on building RecCoin,
 the intended-for-services, no-graphical-interface, reference
 implementation of RecCoin.
