@@ -54,9 +54,3 @@ Unpack the files into a directory and run:
  bin/32/reccoin (headless, 32-bit)
  bin/64/reccoin-qt (GUI, 64-bit)
  bin/64/reccoin (headless, 64-bit)
-
-
-See the documentation at the bitcoin wiki:
-  https://en.bitcoin.it/wiki/Main_Page
-for help and more information.
-
