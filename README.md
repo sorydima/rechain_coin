@@ -54,3 +54,4 @@ Unpack the files into a directory and run:
  bin/32/reccoin (headless, 32-bit)
  bin/64/reccoin-qt (GUI, 64-bit)
  bin/64/reccoin (headless, 64-bit)
+ .
