@@ -1,22 +1,22 @@
-# REChain 🪐
+# REChain ®️ 🪐
 
 Implementation of a <https://matrix.katya.wtf> node in Python based on the Katya ® 👽 Kit framework.
 
-> **NOTE:** In 2019, we split our implementation of "REChain 🪐 Coin" from its development framework
+> **NOTE:** In 2019, we split our implementation of "REChain ®️ 🪐 Coin" from its development framework
 > "Katya ® 👽 Kit".
 
-This repo contains runtimes for the REChain 🪐 Coin network based on C++ & QT Technology. The README file provides
-information about installing the `REChain 🪐 Coin` binary and developing on the codebase.
+This repo contains runtimes for the REChain ®️ 🪐 Coin network based on C++ & QT Technology. The README file provides
+information about installing the `REChain ®️ 🪐 Coin` binary and developing on the codebase.
 
 ## Installation
 
-### Building REChain 🪐 Coin (RecCoin)
+### Building REChain ®️ 🪐 Coin (RecCoin)
 
 See doc/readme-qt.rst for instructions on building reccoin-qt,
 the intended-for-end-users, nice-graphical-interface, reference
 implementation of RecCoin.
 
-**NOTE:** /* See doc/build-*.txt for instructions on building REChain 🪐 Coin,
+**NOTE:** /* See doc/build-*.txt for instructions on building REChain ®️ 🪐 Coin,
 the intended-for-services, no-graphical-interface, reference
 implementation of RecCoin. */
 
@@ -26,8 +26,8 @@ RecCoin 1.0
 
 Copyright (c) 2009-2012 Bitcoin Developers
 Copyright (c) 2011-2012 Litecoin Developers
-Copyright (c) 2020 REChain
-Copyright (c) 2019-2020 Dmitry Sorokin
+Copyright (c) 2020-2024 REChain, Inc
+Copyright (c) 2019-2024 Dmitry Sorokin
 
 Distributed under the MIT/X11 software license, see the accompanying
 file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -55,3 +55,5 @@ Unpack the files into a directory and run:
  bin/64/reccoin-qt (GUI, 64-bit)
  bin/64/reccoin (headless, 64-bit)
  .
+
+ Copyright © 2019-2024 Need help? 🤔 Email us! 👇 A Dmitry Sorokin production. All rights reserved. Powered by REChain. 🪐 Copyright © 2019-2024 REChain, Inc REChain ® is a registered trademark hr@rechain.email p2p@rechain.email pr@rechain.email sorydima@rechain.email support@rechain.email sip@rechain.email music@rechain.email Please allow anywhere from 1 to 5 business days for E-mail responses! 💌
