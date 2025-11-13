@@ -1,0 +1,1 @@
+Toolchain files for cross-compilation will live here. Add Android NDK toolchain, iOS toolchain wrapper, MinGW/Windows toolchain and WASM toolchain for web targets.

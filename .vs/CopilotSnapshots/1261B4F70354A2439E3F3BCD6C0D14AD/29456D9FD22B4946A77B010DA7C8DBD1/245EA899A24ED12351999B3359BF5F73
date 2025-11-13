@@ -1,0 +1,30 @@
+﻿cmake_minimum_required(VERSION 3.16)
+project(rechain_core)
+
+# Root of original sources
+set(SRC_ROOT "${CMAKE_SOURCE_DIR}/src")
+
+# Collect all cpp/c sources recursively
+file(GLOB_RECURSE ALL_SRC
+    "${SRC_ROOT}/*.cpp"
+    "${SRC_ROOT}/*.c"
+)
+
+# Exclude UI and tests (handles both / and \ path separators)
+list(FILTER ALL_SRC EXCLUDE REGEX ".*[\\/](src|)\\/qt\\/.*")
+list(FILTER ALL_SRC EXCLUDE REGEX ".*[\\/](src|)\\/test\\/.*")
+
+# If no sources found, create an empty interface library to avoid errors
+if(ALL_SRC)
+    add_library(rechain_core STATIC ${ALL_SRC})
+else()
+    add_library(rechain_core INTERFACE)
+endif()
+
+target_include_directories(rechain_core
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${SRC_ROOT}
+)
+
+# Example: consumers can link to rechain_core. Actual link libraries (Boost, OpenSSL, etc.) should be added when needed.

@@ -1,0 +1,30 @@
+﻿name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r ai/requirements.txt
+    - name: Configure CMake
+      run: |
+        mkdir build && cd build
+        cmake .. -DRECHAIN_USE_FRONTEND_QT_DIR=OFF
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release
+    - name: Run mesh discovery unit test
+      run: |
+        python -m mesh.discovery & sleep 2; pkill -f mesh.discovery || true

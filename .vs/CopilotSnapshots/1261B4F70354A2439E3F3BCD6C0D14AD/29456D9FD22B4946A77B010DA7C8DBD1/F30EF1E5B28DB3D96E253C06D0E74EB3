@@ -1,0 +1,38 @@
+﻿cmake_minimum_required(VERSION 3.16)
+project(rechain_core)
+
+# Root of original sources
+set(SRC_ROOT "${CMAKE_SOURCE_DIR}/src")
+
+# Also include new core/src
+file(GLOB_RECURSE ALL_SRC
+    "${SRC_ROOT}/*.cpp"
+    "${SRC_ROOT}/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
+)
+
+# Exclude UI and tests
+list(FILTER ALL_SRC EXCLUDE REGEX ".*[\\/](src|)\\/qt\\/.*")
+list(FILTER ALL_SRC EXCLUDE REGEX ".*[\\/](src|)\\/test\\/.*")
+
+if(ALL_SRC)
+    add_library(rechain_core STATIC ${ALL_SRC})
+else()
+    add_library(rechain_core INTERFACE)
+endif()
+
+target_include_directories(rechain_core
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${SRC_ROOT}
+)
+
+# Link common libs if found
+find_package(Boost QUIET)
+if(Boost_FOUND)
+    target_include_directories(rechain_core PUBLIC ${Boost_INCLUDE_DIRS})
+    target_link_libraries(rechain_core PUBLIC ${Boost_LIBRARIES})
+endif()
+
+install(TARGETS rechain_core EXPORT rechain_core-export LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include)

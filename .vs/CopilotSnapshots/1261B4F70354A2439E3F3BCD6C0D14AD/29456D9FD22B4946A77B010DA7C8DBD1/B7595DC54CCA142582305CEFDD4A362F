@@ -1,0 +1,3 @@
+﻿networkx>=2.0
+numpy
+scikit-learn

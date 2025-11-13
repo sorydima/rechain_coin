@@ -1,0 +1,16 @@
+﻿cmake_minimum_required(VERSION 3.16)
+project(rechain_qt)
+
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+# Collect UI sources from the original `src/qt` directory at repository root
+file(GLOB QT_SOURCES "${CMAKE_SOURCE_DIR}/src/qt/*.cpp")
+file(GLOB QT_HEADERS "${CMAKE_SOURCE_DIR}/src/qt/*.h")
+file(GLOB QT_FORMS "${CMAKE_SOURCE_DIR}/src/qt/forms/*.ui")
+file(GLOB QT_RES "${CMAKE_SOURCE_DIR}/src/qt/res/*")
+
+add_executable(rechain-qt ${QT_SOURCES} ${QT_HEADERS})
+
+target_include_directories(rechain-qt PRIVATE ${CMAKE_SOURCE_DIR}/src/qt)
+
+target_link_libraries(rechain-qt PRIVATE Qt5::Widgets)

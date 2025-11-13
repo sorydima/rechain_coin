@@ -1,0 +1,7 @@
+﻿# Mesh
+
+Code and specifications for mesh networking, device discovery, and P2P overlay.
+
+Mapping notes:
+- Provide clear interfaces between `core/network` and `mesh` overlay.
+- Add documentation and simulation scripts.

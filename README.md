@@ -8,32 +8,24 @@ Implementation of a <https://matrix.katya.wtf> node in Python based on the Katya
 This repo contains runtimes for the REChain ®️ 🪐 Coin network based on C++ & QT Technology. The README file provides
 information about installing the `REChain ®️ 🪐 Coin` binary and developing on the codebase.
 
-## Installation
+---
 
-### Building REChain ®️ 🪐 Coin (RecCoin)
+Repository reorganized:
 
-See doc/readme-qt.rst for instructions on building reccoin-qt,
-the intended-for-end-users, nice-graphical-interface, reference
-implementation of RecCoin.
+To improve modularity and prepare for cross-platform builds, mesh networking and AI integration, a set of top-level
+directories was added. These are scaffolds and do not yet replace existing build scripts; migration is incremental.
 
-**NOTE:** /* See doc/build-*.txt for instructions on building REChain ®️ 🪐 Coin,
-the intended-for-services, no-graphical-interface, reference
-implementation of RecCoin. */
+New top-level directories:
+- `core/` — core libraries and public headers
+- `frontend/` — UI code (Qt) and platform frontends
+- `backend/` — daemons, CLI and server components
+- `infra/` — build scripts, CMake toolchains and CI templates
+- `ai/` — optional machine-learning modules (includes `ai_quantum_core` scaffold)
+- `mesh/` — mesh networking overlay and related tools
+- `docs/` — documentation and architecture guides
+- `platforms/` — platform-specific scaffolds for Android, iOS, Web, etc.
 
-#### Building reccoin-qt
-
-RecCoin 1.0
-
-Copyright (c) 2009-2012 Bitcoin Developers
-Copyright (c) 2011-2012 Litecoin Developers
-Copyright (c) 2020-2024 REChain, Inc
-Copyright (c) 2019-2024 Dmitry Sorokin
-
-Distributed under the MIT/X11 software license, see the accompanying
-file COPYING or http://www.opensource.org/licenses/mit-license.php.
-This product includes software developed by the OpenSSL Project for use in
-the OpenSSL Toolkit (http://www.openssl.org/).  This product includes
-cryptographic software written by Eric Young (eay@cryptsoft.com).
+See `docs/ARCHITECTURE.md` for the high-level refactor plan and guidelines.
 
 
 Intro

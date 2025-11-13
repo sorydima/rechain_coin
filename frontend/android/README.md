@@ -1,0 +1,1 @@
+Android frontend scaffold. Add JNI wrappers and Gradle project that links to `rechain_core` via native library.

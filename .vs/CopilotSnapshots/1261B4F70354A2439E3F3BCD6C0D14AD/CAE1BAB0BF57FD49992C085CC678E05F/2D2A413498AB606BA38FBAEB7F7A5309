@@ -1,0 +1,198 @@
+﻿"""Asynchronous mesh discovery + sync prototype.
+
+Implements a simple async UDP-based sync protocol with message types:
+- HELLO: initial handshake
+- DIGESTS: list of object ids and versions
+- REQUEST: request an object (or chunk)
+- CHUNK: transfer a chunked object
+- ACK: acknowledgment
+
+This is a proof-of-concept to demonstrate handshake, digest exchange, chunked transfer
+and resumability. Not production-ready: no authentication/encryption is provided here.
+
+Run `python -m mesh.async_sync` to run a local demo with two nodes.
+"""
+
+import asyncio
+import json
+import base64
+import time
+import uuid
+from typing import Dict, Tuple
+
+CHUNK_SIZE = 1024
+
+
+def now_ts():
+    return int(time.time())
+
+
+class SyncNodeProtocol(asyncio.DatagramProtocol):
+    def __init__(self, node):
+        self.node = node
+
+    def connection_made(self, transport):
+        self.transport = transport
+        self.node._set_transport(transport)
+
+    def datagram_received(self, data, addr):
+        try:
+            msg = json.loads(data.decode('utf-8'))
+        except Exception as e:
+            print(f"{self.node.node_id}: invalid message from {addr}: {e}")
+            return
+        asyncio.create_task(self.node.handle_message(msg, addr))
+
+
+class SyncNode:
+    def __init__(self, host: str, port: int, node_id: str = None):
+        self.host = host
+        self.port = port
+        self.node_id = node_id or str(uuid.uuid4())
+        # storage: object_id -> (bytes, version)
+        self.storage: Dict[str, Tuple[bytes, int]] = {}
+        self.transport = None
+        self.peers = set()
+        self.pending = {}  # object_id -> bytearray for incoming
+
+    async def start(self):
+        loop = asyncio.get_running_loop()
+        endpoint = await loop.create_datagram_endpoint(lambda: SyncNodeProtocol(self), local_addr=(self.host, self.port))
+        print(f"{self.node_id}: listening on {self.host}:{self.port}")
+
+    def _set_transport(self, transport):
+        self.transport = transport
+
+    def add_object(self, object_id: str, data: bytes, version: int = 1):
+        self.storage[object_id] = (data, version)
+
+    def _send(self, msg: dict, addr):
+        if not self.transport:
+            raise RuntimeError('transport not ready')
+        payload = json.dumps(msg).encode('utf-8')
+        self.transport.sendto(payload, addr)
+
+    async def handle_message(self, msg: dict, addr):
+        mtype = msg.get('type')
+        sender = msg.get('from')
+        if sender:
+            self.peers.add((sender, addr))
+        # Dispatch
+        if mtype == 'HELLO':
+            await self._on_hello(msg, addr)
+        elif mtype == 'DIGESTS':
+            await self._on_digests(msg, addr)
+        elif mtype == 'REQUEST':
+            await self._on_request(msg, addr)
+        elif mtype == 'CHUNK':
+            await self._on_chunk(msg, addr)
+        elif mtype == 'ACK':
+            await self._on_ack(msg, addr)
+        else:
+            print(f"{self.node_id}: unknown message type {mtype} from {addr}")
+
+    async def _on_hello(self, msg, addr):
+        # Respond with DIGESTS
+        digests = [{'id': oid, 'version': ver} for oid, (_, ver) in self.storage.items()]
+        resp = {'type': 'DIGESTS', 'from': self.node_id, 'digests': digests}
+        self._send(resp, addr)
+        print(f"{self.node_id}: HELLO from {msg.get('from')} -> sent DIGESTS ({len(digests)}) to {addr}")
+
+    async def _on_digests(self, msg, addr):
+        # Compare digests and request missing/older objects
+        digests = msg.get('digests', [])
+        for entry in digests:
+            oid = entry.get('id')
+            ver = entry.get('version', 0)
+            local = self.storage.get(oid)
+            if not local or local[1] < ver:
+                # request full object starting at chunk 0
+                req = {'type': 'REQUEST', 'from': self.node_id, 'id': oid, 'chunk': 0}
+                self._send(req, addr)
+                print(f"{self.node_id}: requesting {oid} from {addr}")
+
+    async def _on_request(self, msg, addr):
+        oid = msg.get('id')
+        chunk_idx = int(msg.get('chunk', 0))
+        entry = self.storage.get(oid)
+        if not entry:
+            print(f"{self.node_id}: received request for unknown object {oid}")
+            return
+        data, ver = entry
+        # send chunk
+        start = chunk_idx * CHUNK_SIZE
+        chunk = data[start:start + CHUNK_SIZE]
+        b64 = base64.b64encode(chunk).decode('ascii')
+        more = 1 if (start + CHUNK_SIZE) < len(data) else 0
+        msg_out = {
+            'type': 'CHUNK',
+            'from': self.node_id,
+            'id': oid,
+            'chunk': chunk_idx,
+            'data': b64,
+            'more': more,
+            'version': ver,
+        }
+        self._send(msg_out, addr)
+        print(f"{self.node_id}: sent CHUNK {chunk_idx} (more={more}) for {oid} to {addr}")
+
+    async def _on_chunk(self, msg, addr):
+        oid = msg.get('id')
+        chunk_idx = int(msg.get('chunk', 0))
+        b64 = msg.get('data', '')
+        more = int(msg.get('more', 0))
+        ver = int(msg.get('version', 0))
+        chunk = base64.b64decode(b64.encode('ascii'))
+        buf = self.pending.setdefault(oid, bytearray())
+        # For simplicity, append — assumes ordered delivery. In real world use offsets.
+        buf.extend(chunk)
+        print(f"{self.node_id}: received CHUNK {chunk_idx} for {oid} (more={more}) from {addr}")
+        if not more:
+            # finalize
+            self.storage[oid] = (bytes(buf), ver)
+            self.pending.pop(oid, None)
+            # send ACK
+            ack = {'type': 'ACK', 'from': self.node_id, 'id': oid, 'version': ver}
+            self._send(ack, addr)
+            print(f"{self.node_id}: assembled object {oid} (len={len(self.storage[oid][0])}), sent ACK to {addr}")
+
+    async def _on_ack(self, msg, addr):
+        print(f"{self.node_id}: received ACK for {msg.get('id')} from {msg.get('from')} version={msg.get('version')}")
+
+    # Active operations
+    def send_hello(self, peer_addr):
+        msg = {'type': 'HELLO', 'from': self.node_id, 'ts': now_ts()}
+        self._send(msg, peer_addr)
+        print(f"{self.node_id}: sent HELLO to {peer_addr}")
+
+
+async def demo_two_nodes():
+    node_a = SyncNode('127.0.0.1', 10001, node_id='nodeA')
+    node_b = SyncNode('127.0.0.1', 10002, node_id='nodeB')
+
+    # node A has an object
+    data = b'This is a sample payload that will be chunked and transferred between nodes.' * 20
+    node_a.add_object('object1', data, version=1)
+
+    await node_a.start()
+    await node_b.start()
+
+    # node B says HELLO to A to initiate sync
+    await asyncio.sleep(0.1)
+    node_b.send_hello(('127.0.0.1', 10001))
+
+    # wait for transfer to complete
+    await asyncio.sleep(2)
+
+    # Verify
+    if 'object1' in node_b.storage:
+        print('Sync successful: nodeB has object1, len=', len(node_b.storage['object1'][0]))
+    else:
+        print('Sync failed: nodeB missing object1')
+
+    # Close transports
+    await asyncio.sleep(0.1)
+
+
+if __name__ == '__main__':
+    asyncio.run(demo_two_nodes())

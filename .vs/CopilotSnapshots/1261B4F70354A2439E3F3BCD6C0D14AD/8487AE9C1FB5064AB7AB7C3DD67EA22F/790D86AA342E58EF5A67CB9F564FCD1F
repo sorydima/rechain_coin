@@ -1,0 +1,9 @@
+﻿cmake_minimum_required(VERSION 3.16)
+project(rechain_core)
+
+# Placeholder core library target
+add_library(rechain_core STATIC
+    # list of source files will be added during refactor
+)
+
+target_include_directories(rechain_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

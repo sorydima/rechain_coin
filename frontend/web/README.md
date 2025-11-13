@@ -1,0 +1,1 @@
+Web frontend scaffold — use Emscripten to compile core into WebAssembly and expose a JS API wrapper.

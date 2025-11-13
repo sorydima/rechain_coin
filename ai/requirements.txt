@@ -1,0 +1,6 @@
+networkx>=2.0
+numpy
+scikit-learn
+cryptography>=3.4
+pytest
+pytest-asyncio

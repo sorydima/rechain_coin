@@ -1,0 +1,30 @@
+import asyncio
+import pytest
+import base64
+from mesh.async_sync import SyncNode
+
+
+def test_key_exchange_and_secure_transfer():
+    async def _run():
+        node_a = SyncNode('127.0.0.1', 12001, node_id='nodeA')
+        node_b = SyncNode('127.0.0.1', 12002, node_id='nodeB')
+
+        data = b'A'*5000
+        node_a.add_object('objX', data, version=1)
+
+        await node_a.start()
+        await node_b.start()
+
+        # perform key exchange and hello
+        node_b.send_key_exchange(('127.0.0.1', 12001))
+        await asyncio.sleep(0.05)
+        node_b.send_hello(('127.0.0.1', 12001))
+
+        # wait for transfer
+        await asyncio.sleep(1.0)
+
+        assert 'objX' in node_b.storage
+        assert node_b.storage['objX'][0] == data
+
+    asyncio.run(_run())
+

@@ -1,0 +1,7 @@
+﻿cmake_minimum_required(VERSION 3.16)
+project(rechain_coin)
+
+# Top-level CMake that defines core, frontend, backend targets
+add_subdirectory(core)
+add_subdirectory(frontend)
+add_subdirectory(backend)
